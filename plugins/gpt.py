@@ -14,7 +14,7 @@ async def ai_generate(client, message):
    user_input = message.text.split()[1:]
 
    if not user_input:
-       await message.reply_text("command incomplete provide /gpt2 /gpt3 hello")
+       await message.reply_text("command incomplete provide /gpt hello")
        return
 
    user_input = " ".join(user_input)
