@@ -3,7 +3,7 @@ import requests
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 import requests
-from info import LOG_CHANNEL, GOOGLE_API_KEY, SUPPORT_CHAT_ID
+from config import LOG_CHANNEL, GOOGLE_API_KEY, SUPPORT_CHAT_ID
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 import google.generativeai as genai
 
