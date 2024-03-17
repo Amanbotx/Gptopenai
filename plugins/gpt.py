@@ -55,7 +55,7 @@ async def ai_generate(client, message):
    response = model.generate_content(prompt_parts)
    await message.reply_text(text=f"ʜᴇʏ {message.from_user.mention}\n ǫᴜᴇʀʏ ɪs:- {user_input}\n\nResults:\n\n{response.text}")         
    await client.send_message(LOG_CHANNEL, text=f"#ask ʀᴇǫᴜᴇsᴛ ғʀᴏᴍ {message.from_user.mention}\nǫᴜᴇʀʏ ɪs:- {user_input}")
-   await s.delete()
+   
 
 @Client.on_message(filters.command("gpt"))
 async def ai_generate_private(client, message):
