@@ -5,7 +5,7 @@ from config import API_ID, API_HASH, BOT_TOKEN, OPENAI_API_KEY
 
 openai.api_key = OPENAI_API_KEY
 
-@Client.on_message(filters.command('openai'))
+@Client.on_message(filters.private & filters.text & ~filters.command(['start', 'broadcast']))
 async def openai_command(client, message):
     if not message.text:
         await client.send_message(message.chat.id, "Please provide ur request")
