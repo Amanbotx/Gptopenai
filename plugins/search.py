@@ -1,75 +1,43 @@
 import os
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
-import requests
-from config import LOG_CHANNEL, GOOGLE_API_KEY
-import google.generativeai as genai
+from config import OPENAI_API, LOG_CHANNEL, AI
+import openai
+import asyncio
 
-genai.configure(api_key=GOOGLE_API_KEY)
-# how to get the api key == https://t.me/sd_bots/256 (copy this link and search on telegram)
+openai.api_key = OPENAI_API
 
-@Client.on_message(filters.command("ask") & filters.group)
-async def ai_generate(client, message):
-    user_input = message.text.split()[1:]
+async def send_message_in_chunks(client, chat_id, text):
+    max_length = 4096  # Maximum length of a message
+    for i in range(0, len(text), max_length):
+        await client.send_message(chat_id, text[i:i+max_length])
 
-    if not user_input:
-        await message.reply_text("Please provide your question after /ask")
-        return
 
-    user_input = " ".join(user_input)
-    s = await message.reply_sticker("CAACAgUAAxkBAAIj-mWlAjaflbkifrOJPnnxp2edkuD-AALPDAACzIApVcg9eEkNQbBGHgQ")
+@Client.on_message(filters.private & filters.text & ~filters.command(['start', 'broadcast']))
+async def ai_answer(client, message):
+    if AI == True: 
+        user_id = message.from_user.id
+        if user_id:
+            try:
+                msg = await message.reply_text("**ᴘʟᴇᴀsᴇ ᴡᴀɪᴛ ᴀ ᴍᴏᴍᴇɴᴛ ᴡʜɪʟᴇ ᴛʜᴇ ᴄʜᴀᴛʙᴏᴛ ʀᴇsᴘᴏɴᴅs ᴛᴏ ʏᴏᴜʀ ǫᴜᴇʀʏ . . .**")
+                users_message = message.text
+                user_id = message.from_user.id
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "You are a helpful assistant."},
+                        {"role": "user", "content": users_message}
+                    ],
+                    max_tokens=1200,  # Increase the value of max_tokens to allow for longer responses
+                    temperature=0.6
+                )
+                footer_credit = "<b><a href='https://t.me/vj_bot_disscussion'>• ʀᴇᴘᴏʀᴛ ɪꜱꜱᴜᴇ •</a>══<a href='https://t.me/kingvj01'>• ᴄᴏɴᴛᴀᴄᴛ ᴍᴀꜱᴛᴇʀ •</a></b>"
+                ai_response = response.choices[0].message.content.strip()
+                await msg.delete()
+                await send_message_in_chunks(client, message.chat.id, f"**ʜᴇʀᴇ ɪs ʏᴏᴜʀ ᴀɴsᴡᴇʀ ʀᴇʟᴀᴛᴇᴅ ᴛᴏ ʏᴏᴜʀ ǫᴜᴇʀʏ** 👇\n\n{ai_response}\n\n{footer_credit}")
+                await send_message_in_chunks(client, LOG_CHANNEL, f"**⭕ ᴀ ᴜsᴇʀ ɴᴀᴍᴇᴅ:** {message.from_user.mention} **ᴡɪᴛʜ ᴜsᴇʀ ɪᴅ -** {user_id}.\n🔍 **ᴀsᴋᴇᴅ ᴍᴇ ᴛʜɪs ǫᴜᴇʀʏ...**👇\n\n🔻 **ǫᴜᴇʀʏ:** `{users_message}`\n\n🔻 **ʜᴇʀᴇ ɪs ᴀɴsᴡᴇʀ ɪ ʀᴇsᴘᴏɴᴅᴇᴅ:**\n🖍️ {ai_response}\n\n\n🔻 **ᴜsᴇʀ ɪᴅ :-** {user_id} \n🔻 **ᴜsᴇʀ ɴᴀᴍᴇ :-** {message.from_user.mention}")
 
-    if user_input.lower() in ["who is your owner", "what is your owner name"]:  
-        buttons = [[
-            InlineKeyboardButton("developer", url="https://t.me/BOT_OWNER26")
-        ]]
-        reply_markup = InlineKeyboardMarkup(buttons)
-        await message.reply_sticker("CAACAgUAAxkBAAIjWGWkDiJW1Dyn6n8CjbbwxExf0FEIAAJyCgACywLBVKKgVw2dk9PbHgQ")
-        await message.reply_text(text=f"ʜᴇʏ {message.from_user.mention}", reply_markup=reply_markup)
-        return
-
-    generation_config = {
-        "temperature": 0.9,
-        "top_p": 1,
-        "top_k": 1,
-        "max_output_tokens": 2048,
-    }
-
-    safety_settings = [
-        {
-            "category": "HARM_CATEGORY_HARASSMENT",
-            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-        },
-        {
-            "category": "HARM_CATEGORY_HATE_SPEECH",
-            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-        },
-        {
-            "category": "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-        },
-        {
-            "category": "HARM_CATEGORY_DANGEROUS_CONTENT",
-            "threshold": "BLOCK_MEDIUM_AND_ABOVE"
-        },
-    ]
-
-    model = genai.GenerativeModel(
-        model_name="gemini-pro",
-        generation_config=generation_config,
-        safety_settings=safety_settings
-    )
-
-    prompt_parts = [user_input]
-    response = model.generate_content(prompt_parts)
-    await message.reply_text(response.text)
-    await client.send_message(LOG_CHANNEL, text=f"#google_ai ʀᴇǫᴜᴇsᴛ ғʀᴏᴍ {message.from_user.mention}\nǫᴜᴇʀʏ ɪs:- {user_input}")
-    await s.delete()
-@Client.on_message(filters.command("ask") & filters.private)
-async def ai_generate_private(client, message):
-  buttons = [[
-    InlineKeyboardButton("ɢʀᴏᴜᴘ", url="https://t.me/Amanchatgroup1")
-  ]]
-  reply_markup = InlineKeyboardMarkup(buttons)
-  await message.reply_sticker("CAACAgUAAxkBAAIjWGWkDiJW1Dyn6n8CjbbwxExf0FEIAAJyCgACywLBVKKgVw2dk9PbHgQ")
-  await message.reply_text(text=f"ʜᴇʏ {message.from_user.mention}\nᴜsᴇ ᴛʜɪs ғᴇᴀᴛᴜʀᴇ ɪɴ ɢʀᴏᴜᴘ", reply_markup=reply_markup)
+            except Exception as error:
+                print(error)
+                await message.reply_text(f"**An error occurred:**\n\n**{error}**\n\n**Forward This Message To @KingVJ01**")
+                    else:
+                return
