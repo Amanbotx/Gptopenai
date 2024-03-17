@@ -12,8 +12,8 @@ def is_enabled(value, default):
 
 API_ID = int(environ.get("API_ID", "24004349"))
 API_HASH = environ.get("API_HASH", "5aabfb11c262b17d568d828a3100f296")
-BOT_TOKEN = environ.get("BOT_TOKEN", "6883904115:AAFzjOFjf30iab7YEh5dMQ5Y1D0V-6bBQ74")
-LOG_CHANNEL = int(environ.get("LOG_CHANNEL", "-1002062708890"))
+BOT_TOKEN = environ.get("BOT_TOKEN", "6380624575:AAEOLrpHS0eVcWcgGTuJm33fzeAMoDeJeIc")
+LOG_CHANNEL = int(environ.get("LOG_CHANNEL", "-1001973960964"))
 ADMINS = int(environ.get("ADMINS", "5977931010"))
 DB_URI = environ.get("DB_URI", "mongodb+srv://ranjuvishwakarma50:aman@cluster0.jfl45jq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 DB_NAME = environ.get("DB_NAME", "Cluster0")
