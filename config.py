@@ -23,3 +23,4 @@ support_chat_id = environ.get('SUPPORT_CHAT_ID', '-1002028053413')
 SUPPORT_CHAT_ID = int(support_chat_id) if support_chat_id and id_pattern.search(support_chat_id) else None
 #ask 
 GOOGLE_API_KEY = environ.get('API_KEY', 'AIzaSyASKXFxSjnvHO_k5kibkqf8DOdLjh9G4Hs')
+SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'https://t.me/Amanchatgroup1')
